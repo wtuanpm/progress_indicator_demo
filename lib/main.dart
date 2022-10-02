@@ -33,14 +33,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     with TickerProviderStateMixin {
   late AnimationController controller;
 
+  late final AppBloc _appBloc;
+
   @override
   void initState() {
     controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
-    )..addListener(() {
-        setState(() {});
-      });
+    )..addListener(_progressIndicatorListener);
     controller.animateTo(1);
     super.initState();
   }
@@ -51,11 +51,23 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
     super.dispose();
   }
 
+  _progressIndicatorListener() {
+    if (controller.value >= 1 &&
+        _appBloc.state.status == GetConfigurationStatus.success) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => const HomePage()));
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider<AppBloc>(
       // ngay sau khi app bloc instance được khởi tạo, call api get configuration
-      create: (context) => AppBloc()..add(GetConfigurationEvent()),
+      create: (context) {
+        _appBloc = AppBloc();
+        return _appBloc..add(GetConfigurationEvent());
+      },
       child: BlocListener<AppBloc, AppState>(
         listener: ((context, state) {
           switch (state.status) {
@@ -66,8 +78,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget>
               // TODO: Handle this case.
               break;
             case GetConfigurationStatus.success:
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => const HomePage()));
+              if (controller.value >= 1) {
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const HomePage()));
+              }
+
               break;
             case GetConfigurationStatus.error:
               // TODO: Handle this case.

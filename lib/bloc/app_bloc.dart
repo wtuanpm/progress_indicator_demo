@@ -11,7 +11,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       GetConfigurationEvent event, Emitter<AppState> emit) async {
     try {
       emit(state.copyWith(status: GetConfigurationStatus.progressing));
-      await Future.delayed(const Duration(seconds: 10));
+      await Future.delayed(const Duration(seconds: 5));
       emit(state.copyWith(status: GetConfigurationStatus.success));
       //â
     } catch (err) {
